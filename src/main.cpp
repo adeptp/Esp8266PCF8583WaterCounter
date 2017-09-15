@@ -30,7 +30,7 @@ extern "C" {
 }
 #endif
 
-#define MYHOSTNAME "HozblokWC1"
+#define MYHOSTNAME "HozblokWC2"
 
 const char* ssid = SSID;//Put  yuor ssid here
 const char* password = SSIDPASSWORD;//Put  yuor ssid password here
