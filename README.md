@@ -7,7 +7,7 @@ Visual Studio Code (https://code.visualstudio.com/)
 
 The device reads the readings from the water meter through the built-in reed switch, meter electricity through the output for verification.
 
-Hardware needs ESP8266 ESP12-E, PCH8583 and 74HC00 to suppress the chatter of the contact.
+Hardware needs ESP8266 ESP12-E, PCF8583 and 74HC00 to suppress the chatter of the contact.
 
 This project implements ideas for my personal IOT from gitHub, ESP8266 libraries and much more. The device has been working for more than a month.
 
