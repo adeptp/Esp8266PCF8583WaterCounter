@@ -8,7 +8,7 @@
 #include <OneWire.h> //http://www.pjrc.com/teensy/td_libs_OneWire.html
 #include <DallasTemperature.h> //https://github.com/milesburton/Arduino-Temperature-Control-Library
 #include <SoftwareSerial.h>
-#include <PCF8583.h> //
+#include <PCF8583.h> //GitHub url lost
 #include "RemoteDebug.h"        //https://github.com/JoaoLopesF/RemoteDebug
 #include "privatefile.h" // Remove this line by commenting on it
 
@@ -30,7 +30,7 @@ extern "C" {
 }
 #endif
 
-#define MYHOSTNAME "HozblokWC2"
+#define MYHOSTNAME "HozblokWC1"
 
 const char* ssid = SSID;//Put  yuor ssid here
 const char* password = SSIDPASSWORD;//Put  yuor ssid password here
