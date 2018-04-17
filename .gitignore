@@ -35,3 +35,5 @@
 .vscode/c_cpp_properties.json
 .travis.yml
 privatefile.h
+.clang_complete
+.gcc-flags.json

@@ -11,6 +11,8 @@
 #include <PCF8583.h> //GitHub url lost
 #include "RemoteDebug.h"        //https://github.com/JoaoLopesF/RemoteDebug
 #include "privatefile.h" // Remove this line by commenting on it
+#include <ESP8266WebServer.h>
+
 
 #define LOCATION_OFFSET_COUNTER_OVERFLOW 0x51 //2 BYTE
 #define LOCATION_OFFSET_INITIAL_INDICATION 0x53 //4 BYTE
@@ -30,7 +32,7 @@ extern "C" {
 }
 #endif
 
-#define MYHOSTNAME "HozblokWC1"
+#define MYHOSTNAME "HozblokWC"
 
 const char* ssid = SSID;//Put  yuor ssid here
 const char* password = SSIDPASSWORD;//Put  yuor ssid password here
@@ -38,7 +40,7 @@ const char* host = MYHOSTNAME;
 
 OneWire  ds(4);  // on pin 4 (a 4.7K resistor is necessary)
 
-DallasTemperature sensors(&ds);// Pass our oneWire reference to Dallas Temperature. 
+DallasTemperature sensors(&ds);// Pass our oneWire reference to Dallas Temperature.
 SoftwareSerial swSer(14, 12, false, 100);
 
 PCF8583 counter1(0xA0);
@@ -87,6 +89,9 @@ unsigned long previousMillisSend = 0;
 unsigned long previousMillisLamp = 0;
 
 RemoteDebug Debug;
+ESP8266WebServer server(80);
+
+
 
 ///mqtt callback
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -111,16 +116,16 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void upTimeCalc(){
-    
+
         long secsUp = millis() / 1000;
-    
+
         upTimeMilli = millis() % 1000;
         upTimeSecond = secsUp % 60;
         upTimeMinute = (secsUp / 60) % 60;
         upTimeHour = (secsUp / (60 * 60)) % 24;
         upTimeDay = (upTimeRollover * 50) + (secsUp / (60 * 60 * 24));  //First portion takes care of a rollover [around 50 days]
     }
-    
+
 
 void SendParam()
 {
@@ -129,6 +134,8 @@ void SendParam()
 	snprintf(topic, msg_size, "%s/freemem", host);
 	snprintf(msg, msg_size, "%ld", ESP.getFreeHeap());
 	client.publish(topic, msg);
+
+
 	//Serial.printf("client send: topic:%s msg:%s\n", topic, msg);
 
 	snprintf(topic, msg_size, "%s/rssi", host);
@@ -701,6 +708,44 @@ void led_Pin_invert(){
 		digitalWrite(LED_PIN, HIGH);
 }
 
+void handleRoot() {
+   server.send(200, "text/plain", "hello from esp8266!");
+ }
+
+
+void handleSensors() {
+	char message[200];
+
+	//float tempC = sensors.getTempC(insideThermometer);
+
+    //dtostrf(tempC, 5, 2, msg);
+
+	snprintf(message, 200, "hostname:%s;", host);
+
+
+
+	server.send(200, "text/plain", message);
+}
+
+
+void handleNotFound(){
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET)?"GET":"POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+  for (uint8_t i=0; i<server.args(); i++){
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+  server.send(404, "text/plain", message);
+}
+
+
+
+
 
 void setup() {
 	uart_set_debug(UART_NO);
@@ -844,6 +889,18 @@ void setup() {
 
 	pinMode(LED_PIN, OUTPUT);
 
+
+	server.on("/", handleRoot);
+	server.on("/sensors", handleSensors);
+
+	server.on("/inline", [](){
+	server.send(200, "text/plain", "this works as well");
+	});
+
+	server.onNotFound(handleNotFound);
+
+	server.begin();
+
 	ESP.wdtEnable(WDTO_4S);
 }
 
@@ -909,7 +966,7 @@ void loop() {
 		//Serial.print("____Send: "); Serial.println(buf);
 		//swSer.println(buf);
 
-		//** Making Note of an expected rollover *****//  
+		//** Making Note of an expected rollover *****//
 		if (millis() >= 3000000000){
 			upTimeHighMillis = 1;
 
@@ -981,10 +1038,7 @@ void loop() {
 	SwSerialHandler();
 
 	ArduinoOTA.handle();
+	server.handleClient();
 	client.loop();
 	Debug.handle();
 }
-
-
-
-
